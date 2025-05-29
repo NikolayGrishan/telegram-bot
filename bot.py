@@ -1,4 +1,5 @@
 # import os
+# import json
 # from telegram.ext import (
 #     ApplicationBuilder, CommandHandler, MessageHandler,
 #     filters, ConversationHandler, ContextTypes, CallbackQueryHandler
@@ -18,6 +19,18 @@
 #     "Вопрос 3: Когда закончишь?"
 # ]
 
+# def load_answers():
+#     global answers
+#     try:
+#         with open("data.json", "r", encoding="utf-8") as f:
+#             answers.update(json.load(f))
+#     except FileNotFoundError:
+#         pass
+
+# def save_answers():
+#     with open("data.json", "w", encoding="utf-8") as f:
+#         json.dump(answers, f, ensure_ascii=False, indent=4)
+
 # async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 #     user = update.effective_user
 #     if user.id not in employees:
@@ -28,24 +41,28 @@
 #         'username': user.username or user.full_name or str(user.id),
 #         'responses': []
 #     }
+#     save_answers()
 #     await update.message.reply_text(questions[0])
 #     return Q1
 
 # async def answer_q1(update, context):
 #     user_id = update.effective_user.id
 #     answers[user_id]['responses'].append(update.message.text)
+#     save_answers()
 #     await update.message.reply_text(questions[1])
 #     return Q2
 
 # async def answer_q2(update, context):
 #     user_id = update.effective_user.id
 #     answers[user_id]['responses'].append(update.message.text)
+#     save_answers()
 #     await update.message.reply_text(questions[2])
 #     return Q3
 
 # async def answer_q3(update, context):
 #     user_id = update.effective_user.id
 #     answers[user_id]['responses'].append(update.message.text)
+#     save_answers()
 #     await update.message.reply_text("Спасибо за ответы!")
 #     return ConversationHandler.END
 
@@ -113,6 +130,8 @@
 #             await query.edit_message_text("⚠️ Этот пользователь уже в списке сотрудников.")
 
 # def main():
+#     load_answers()
+
 #     TOKEN = os.getenv("BOT_TOKEN")
 #     PORT = int(os.getenv("PORT", "8443"))
 #     HOST = os.getenv("RENDER_EXTERNAL_HOSTNAME")
@@ -147,8 +166,6 @@
 # if __name__ == "__main__":
 #     main()
 
-
-
 import os
 import json
 from telegram.ext import (
@@ -164,6 +181,8 @@ Q1, Q2, Q3 = range(3)
 employees = [464421030, 612202903, 818831952, 983099743]  # список сотрудников
 answers = {}
 
+DATA_FILE = 'data.json'
+
 questions = [
     "Вопрос 1: Как дела?",
     "Вопрос 2: Что делаешь?",
@@ -173,13 +192,13 @@ questions = [
 def load_answers():
     global answers
     try:
-        with open("data.json", "r", encoding="utf-8") as f:
+        with open(DATA_FILE, 'r', encoding='utf-8') as f:
             answers.update(json.load(f))
-    except FileNotFoundError:
-        pass
+    except (FileNotFoundError, json.JSONDecodeError):
+        answers.clear()
 
 def save_answers():
-    with open("data.json", "w", encoding="utf-8") as f:
+    with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(answers, f, ensure_ascii=False, indent=4)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -281,11 +300,12 @@ async def handle_add_employee(update: Update, context: ContextTypes.DEFAULT_TYPE
             await query.edit_message_text("⚠️ Этот пользователь уже в списке сотрудников.")
 
 def main():
-    load_answers()
-
+    global answers
     TOKEN = os.getenv("BOT_TOKEN")
     PORT = int(os.getenv("PORT", "8443"))
     HOST = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+
+    load_answers()
 
     app = ApplicationBuilder().token(TOKEN).build()
 
@@ -306,7 +326,6 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex("^/id$"), send_user_id))
     app.add_handler(CallbackQueryHandler(handle_add_employee))
 
-    # Запуск webhook, URL формируем автоматически с https://
     app.run_webhook(
         listen="0.0.0.0",
         port=PORT,
