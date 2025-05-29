@@ -1,0 +1,33 @@
+{
+  "employees": {
+    "612202903": "Nikolay_Grishan",
+    "818831952": "Sanya Dostanko",
+    "464421030": "Виктория"
+  },
+  "answers": {
+    "612202903": {
+      "username": "Mikalai_Hryshan",
+      "responses": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "818831952": {
+      "username": "sanyadostanko",
+      "responses": [
+        "ужасно",
+        "правки по играм",
+        "никогда"
+      ]
+    },
+    "464421030": {
+      "username": "vika_letun",
+      "responses": [
+        "ок",
+        "ок",
+        "ок"
+      ]
+    }
+  }
+}
